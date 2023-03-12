@@ -1,3 +1,11 @@
+/*
+long pooling - the easiest way of real-time communication between client and server
+    * unidirectional (data is sent only by server)
+    * uses HTTP
+    * sent headers along with HTTP for every interchange
+    * can automatically recover if connection terminated
+
+*/
 const express = require('express');
 const cors = require('cors');
 const events = require('events');
@@ -6,16 +14,16 @@ const port = 3001;
 const app = express();
 const eventEmitter = new events.EventEmitter();
 
-// used to parse JSON body
+// parses JSON body in request
 app.use(express.json());
 
-// enable CORS (Cross-origin resource sharing) to allow requests from remote hosts
+// enable CORS (Cross-Origin Resource Sharing) to allow requests from remote hosts
 app.use(cors());
 
 app.get('/messages', (request, response) => {
-    // subscribe once on event but server not reply
+    // subscribe once on event but not reply
     eventEmitter.once('post-message', (message) => {
-        // server replies to all waiting clients only when event emitted
+        // reply to all waiting clients only when event emitted
         const data = {
             message: message,
         };
@@ -27,6 +35,7 @@ app.get('/messages', (request, response) => {
 app.post('/messages', (request, response) => {
     const message = request.body.message;
 
+    // check message availability
     if (!message) {
         response.status(404).send('Message not found.');
     }
